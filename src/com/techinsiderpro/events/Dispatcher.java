@@ -1,9 +1,6 @@
 package com.techinsiderpro.events;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Dispatcher implements Handler
 {
@@ -19,7 +16,7 @@ public class Dispatcher implements Handler
         if (handlers.containsKey(eventType))
             handlers.get(eventType).add(handler);
         else
-            handlers.put(eventType, Arrays.asList(handler));
+            handlers.put(eventType, new ArrayList<>(Collections.singletonList(handler)));
     }
 
     @Override
@@ -27,6 +24,7 @@ public class Dispatcher implements Handler
     {
         if (handlers.containsKey(event.getClass()))
             for (Handler handler : handlers.get(event.getClass()))
-                handler.dispatch(event);
+                if (event instanceof ConsumableEvent && !((ConsumableEvent) event).isConsumed())
+                    handler.dispatch(event);
     }
 }
