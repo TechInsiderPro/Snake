@@ -24,7 +24,7 @@ public class Dispatcher implements Handler
     {
         if (handlers.containsKey(event.getClass()))
             for (Handler handler : handlers.get(event.getClass()))
-                if (event instanceof ConsumableEvent && !((ConsumableEvent) event).isConsumed())
+                if (!(event instanceof ConsumableEvent) || !((ConsumableEvent) event).isConsumed())
                     handler.dispatch(event);
     }
 }
