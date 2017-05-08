@@ -1,25 +1,42 @@
 package com.techinsiderpro.net;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.io.IOException;
+import java.net.*;
 
 class MulticastBroadcaster
 {
-	public static void main(String[] args) throws Exception {
-		int mcPort = 12345;
-		String mcIPStr = "230.1.1.1";
-		DatagramSocket udpSocket = new DatagramSocket();
+    private DatagramSocket datagramSocket;
+    private InetAddress inetAddress;
+    private int port;
 
-		InetAddress mcIPAddress = InetAddress.getByName(mcIPStr);
-		byte[] msg = "Hello".getBytes();
-		DatagramPacket packet = new DatagramPacket(msg, msg.length);
-		packet.setAddress(mcIPAddress);
-		packet.setPort(mcPort);
-		udpSocket.send(packet);
+    public MulticastBroadcaster(String ip, int port)
+    {
+        try
+        {
+            datagramSocket = new DatagramSocket();
+            inetAddress = InetAddress.getByName(ip);
+        }
+        catch (SocketException | UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
 
-		System.out.println("Sent a  multicast message.");
-		System.out.println("Exiting application");
-		udpSocket.close();
-	}
+        this.port = port;
+    }
+
+    protected void send(byte[] msg)
+    {
+        try
+        {
+            DatagramPacket packet = new DatagramPacket(msg, msg.length);
+            packet.setAddress(inetAddress);
+            packet.setPort(port);
+            datagramSocket.send(packet);
+            System.out.println("Sent a  multicast message");
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
