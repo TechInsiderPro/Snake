@@ -49,22 +49,23 @@ public class MulticastReceiver
         }
     }
 
-    protected void receive()
+    protected DatagramPacket receive()
     {
         try
         {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
 
-            System.out.println("Waiting for a  multicast message...");
             multicastSocket.receive(packet);
 
-            String msg = new String(packet.getData(), packet.getOffset(),
-                    packet.getLength());
-            System.out.println("[Multicast  Receiver] Received:" + msg);
+            System.out.println("Received Packet");
+
+            return packet;
         }
         catch (IOException e)
         {
             e.printStackTrace();
         }
+
+        return null;
     }
 }
