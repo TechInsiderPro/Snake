@@ -5,9 +5,9 @@ import java.net.*;
 
 class MulticastBroadcaster
 {
-    private DatagramSocket datagramSocket;
-    private InetAddress inetAddress;
-    private int port;
+    protected DatagramSocket datagramSocket;
+    protected InetAddress inetAddress;
+    protected int port;
 
     public MulticastBroadcaster(String ip, int port)
     {
@@ -32,7 +32,6 @@ class MulticastBroadcaster
             packet.setAddress(inetAddress);
             packet.setPort(port);
             datagramSocket.send(packet);
-            System.out.println("Sent a  multicast message");
         }
         catch (IOException e)
         {

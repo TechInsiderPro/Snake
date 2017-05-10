@@ -7,8 +7,8 @@ import java.net.MulticastSocket;
 
 public class MulticastReceiver
 {
-    private MulticastSocket multicastSocket;
-    private InetAddress inetAddress;
+    protected MulticastSocket multicastSocket;
+    protected InetAddress inetAddress;
 
     public MulticastReceiver(String ip, int port)
     {
@@ -56,8 +56,6 @@ public class MulticastReceiver
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
 
             multicastSocket.receive(packet);
-
-            System.out.println("Received Packet");
 
             return packet;
         }
