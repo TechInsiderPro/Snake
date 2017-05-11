@@ -14,6 +14,8 @@ public class GameClient extends MulticastBroadcaster
 
         try
         {
+            System.out.println("Sending JoinGameRequest");
+
             send("GameJoinRequest".getBytes());
 
             server = new ServerSocket(port).accept();

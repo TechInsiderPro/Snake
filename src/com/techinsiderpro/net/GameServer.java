@@ -8,39 +8,41 @@ import java.util.List;
 
 public class GameServer extends MulticastReceiver
 {
-    private GameServer(String ip, int port)
-    {
-        super(ip, port);
+	private GameServer(String ip, int port)
+	{
+		super(ip, port);
 
-        List<Socket> clients = new ArrayList<>();
+		List<Socket> clients = new ArrayList<>();
 
-        while (clients.size() < 5)
-        {
-            DatagramPacket packet = receive();
+		System.out.println("Waiting for connections... ");
 
-            String packetData = new String(packet.getData(), packet.getOffset(), packet.getLength());
+		while (clients.size() < 5)
+		{
+			DatagramPacket packet = receive();
 
-            System.out.println("Received " + packetData);
+			String packetData = new String(packet.getData(), packet.getOffset(), packet.getLength());
 
-            if (packetData.equals("GameJoinRequest"))
-            {
-                try
-                {
-                    clients.add(new Socket(packet.getAddress(), port));
+			System.out.println("Received " + packetData);
 
-                    System.out.println("Added client " + clients.get(clients.size() - 1).toString());
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+			if (packetData.equals("GameJoinRequest"))
+			{
+				try
+				{
+					Thread.sleep(250);
+					clients.add(new Socket(packet.getAddress(), port));
 
-    }
+					System.out.println("Added client " + clients.get(clients.size() - 1).toString());
+				} catch (IOException | InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
 
-    public static void main(String[] args)
-    {
-        new GameServer("230.1.1.1", 12345);
-    }
+	}
+
+	public static void main(String[] args)
+	{
+		new GameServer("230.1.1.1", 12345);
+	}
 }
