@@ -25,7 +25,7 @@ public class MulticastReceiver
         }
     }
 
-    protected void joinGroup()
+    public void joinGroup()
     {
         try
         {
@@ -37,7 +37,7 @@ public class MulticastReceiver
         }
     }
 
-    protected void leaveGroup()
+    public void leaveGroup()
     {
         try
         {
@@ -49,7 +49,7 @@ public class MulticastReceiver
         }
     }
 
-    protected DatagramPacket receive()
+    public DatagramPacket receive()
     {
         try
         {

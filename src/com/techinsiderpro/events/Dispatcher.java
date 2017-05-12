@@ -16,7 +16,7 @@ public class Dispatcher implements Handler
         if (handlers.containsKey(eventType))
             handlers.get(eventType).add(handler);
         else
-            handlers.put(eventType, new ArrayList<>(Collections.singletonList(handler)));
+            handlers.put(eventType, new ArrayList<Handler>(Collections.singletonList(handler)));
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.techinsiderpro.net;
 import java.io.IOException;
 import java.net.*;
 
-class MulticastBroadcaster
+public class MulticastBroadcaster
 {
     protected DatagramSocket datagramSocket;
     protected InetAddress inetAddress;
@@ -24,7 +24,7 @@ class MulticastBroadcaster
         this.port = port;
     }
 
-    protected void send(byte[] msg)
+    public void send(byte[] msg)
     {
         try
         {
