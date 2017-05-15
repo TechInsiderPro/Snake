@@ -1,6 +1,6 @@
 package com.techinsiderpro.game;
 
-public class ArrayGridObjectContainer implements GridObjectContainer {
+public class ArrayGridObjectContainer extends GridObjectContainer {
     private GridObject[][] gridObjects;
 
     public ArrayGridObjectContainer(int width, int height) {
@@ -8,15 +8,18 @@ public class ArrayGridObjectContainer implements GridObjectContainer {
     }
 
     @Override
-    public void addGridObject(GridObject gridObject) {
+    public boolean add(GridObject gridObject) {
         if (isEmptyAt(gridObject.getPosition())) {
             gridObjects[gridObject.getPosition().getY()][gridObject.getPosition().getX()] = gridObject;
+            return true;
         }
+
+        return false;
     }
 
     @Override
-    public void removeGridObject(GridObject gridObject) {
-        removeGridObjectAt(gridObject.getPosition());
+    public boolean remove(GridObject gridObject) {
+        return removeGridObjectAt(gridObject.getPosition());
     }
 
     @Override
@@ -31,7 +34,7 @@ public class ArrayGridObjectContainer implements GridObjectContainer {
     }
 
     @Override
-    public void removeGridObjectAt(Position position) {
+    public boolean removeGridObjectAt(Position position) {
         gridObjects[position.getY()][position.getX()] = null;
     }
 
