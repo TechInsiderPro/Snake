@@ -2,7 +2,9 @@ package com.techinsiderpro.game;
 
 import com.techinsiderpro.events.Event;
 
-public class DirectionChangeRequestEvent implements Event
+import java.io.Serializable;
+
+public class DirectionChangeRequestEvent implements Event, Serializable
 {
 	private Direction requestedDirection;
 	private GridObject target;

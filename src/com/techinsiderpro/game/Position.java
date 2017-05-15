@@ -1,6 +1,8 @@
 package com.techinsiderpro.game;
 
-public class Position
+import java.io.Serializable;
+
+public class Position implements Serializable
 {
 	private int x, y;
 

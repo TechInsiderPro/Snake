@@ -8,13 +8,14 @@ public class ServerTest
 
 		GridObject gridObject = new GridObject(new Position(1, 1), Direction.DOWN);
 
-		game.send(gridObject);
 
 		while (true)
 		{
 			try
 			{
-				Thread.sleep(100);
+				Thread.sleep(500);
+
+				game.send(gridObject);
 
 				System.out.println(gridObject.getDirection());
 			} catch (InterruptedException e)

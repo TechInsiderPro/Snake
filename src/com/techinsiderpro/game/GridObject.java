@@ -1,6 +1,8 @@
 package com.techinsiderpro.game;
 
-public class GridObject
+import java.io.Serializable;
+
+public class GridObject implements Serializable
 {
 	private Position position;
 	private Direction direction;
