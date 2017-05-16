@@ -18,6 +18,7 @@ public class Server
 {
 
 	private Collection<Socket> connections;
+	private Game game;
 
 	private Server(int clientCount, String ip, int port)
 	{
@@ -27,10 +28,24 @@ public class Server
 		waitForClients(clientCount, ip, port);
 
 		//Setup
-		Game game = new Game(25, 25);
+		game = new Game(25, 25);
+		game.getGridObjectContainer().add(new GridObject(new Position(1, 1), Direction.DOWN));
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
+
+		while (true)
+		{
+			try
+			{
+				Thread.sleep(200);
+			} catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+			send(game.getGridObjectContainer().getGridObjectAt(new Position(1, 1)));
+			System.out.println(game.getGridObjectContainer().getGridObjectAt(new Position(1, 1)).getDirection());
+		}
 	}
 
 	private void waitForClients(int clientCount, String ip, int port)
@@ -39,11 +54,14 @@ public class Server
 		{
 			MulticastReceiver multicastReceiver = new MulticastReceiver(ip, port);
 
+			System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
+
 			while (connections.size() < clientCount)
 			{
 				DatagramPacket packet = multicastReceiver.receive();
+				System.out.println("Received packet : " + packet.toString());
 
-				Thread.sleep(100);
+				Thread.sleep(1000);
 
 				connections.add(new Socket(packet.getAddress(), port));
 
@@ -86,7 +104,7 @@ public class Server
 									{
 										if (method.getReturnType().equals(GridObject.class))
 										{
-											event.getClass().getMethod("set" + method.getName().substring(3, method.getName().length()), )
+											event.getClass().getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class).invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
 										}
 									}
 								} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
@@ -108,7 +126,15 @@ public class Server
 
 	private GridObject getLocalGridObject(GridObject remoteGridObject)
 	{
-		for()
+		for (GridObject gridObject : game.getGridObjectContainer())
+		{
+			if (gridObject.equals(remoteGridObject))
+			{
+				return gridObject;
+			}
+		}
+
+		return null;
 	}
 
 	public void send(Object object)

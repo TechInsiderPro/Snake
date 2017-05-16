@@ -24,4 +24,14 @@ public class DirectionChangeRequestEvent implements Event, Serializable
 	{
 		return target;
 	}
+
+	public void setRequestedDirection(Direction requestedDirection)
+	{
+		this.requestedDirection = requestedDirection;
+	}
+
+	public void setTarget(GridObject target)
+	{
+		this.target = target;
+	}
 }

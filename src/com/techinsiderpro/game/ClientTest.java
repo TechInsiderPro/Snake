@@ -16,6 +16,7 @@ public class ClientTest {
         {
             MulticastBroadcaster multicastBroadcaster = new MulticastBroadcaster("230.1.1.1", 12345);
             multicastBroadcaster.send("Sup".getBytes());
+            System.out.println("Sent sup");
 
             Socket connection = new ServerSocket(12345).accept();
 
