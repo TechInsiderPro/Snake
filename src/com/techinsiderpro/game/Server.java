@@ -2,22 +2,20 @@ package com.techinsiderpro.game;
 
 import com.techinsiderpro.events.Dispatcher;
 import com.techinsiderpro.events.Event;
+import com.techinsiderpro.net.Connection;
 import com.techinsiderpro.net.MulticastReceiver;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.DatagramPacket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class Server
 {
 
-	private Collection<Socket> connections;
+	private Collection<Connection> connections;
 	private Game game;
 
 	private Server(int clientCount, String ip, int port)
@@ -30,21 +28,25 @@ public class Server
 		//Setup
 		game = new Game(25, 25);
 		game.getGridObjectContainer().add(new GridObject(new Position(1, 1), Direction.DOWN));
+		new MovementHandler(game.getDispatcher());
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
+
+		System.out.println(game.getGridObjectContainer().get(0));
 
 		while (true)
 		{
 			try
 			{
 				Thread.sleep(200);
-			} catch (InterruptedException e)
+			}
+			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
-			send(game.getGridObjectContainer().getGridObjectAt(new Position(1, 1)));
-			System.out.println(game.getGridObjectContainer().getGridObjectAt(new Position(1, 1)).getDirection());
+			send(game.getGridObjectContainer().get(0));
+			System.out.println(game.getGridObjectContainer().get(0).getDirection());
 		}
 	}
 
@@ -54,7 +56,7 @@ public class Server
 		{
 			MulticastReceiver multicastReceiver = new MulticastReceiver(ip, port);
 
-			System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
+			//System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
 
 			while (connections.size() < clientCount)
 			{
@@ -63,11 +65,13 @@ public class Server
 
 				Thread.sleep(1000);
 
-				connections.add(new Socket(packet.getAddress(), port));
+				Connection connection = new Connection(packet.getAddress(), port);
+				connections.add(connection);
 
 				System.out.println("Added new connection");
 			}
-		} catch (IOException | InterruptedException e)
+		}
+		catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -75,7 +79,7 @@ public class Server
 
 	private void listenForEventsFromConnections(final Dispatcher dispatcher)
 	{
-		for (final Socket connection : connections)
+		for (final Connection connection : connections)
 		{
 			new Thread()
 			{
@@ -84,44 +88,42 @@ public class Server
 				{
 					super.run();
 
-					try
+					while (this.isAlive())
 					{
-						ObjectInputStream objectInputStream = new ObjectInputStream(connection.getInputStream());
+						Object object = connection.read();
 
-						while (this.isAlive())
+						if (object instanceof Event)
 						{
-							Object object = objectInputStream.readObject();
-
 							System.out.println("Received event " + object.toString());
 
-							if (object instanceof Event)
-							{
-								Event event = (Event) object;
-
-								try
-								{
-									for (Method method : event.getClass().getMethods())
-									{
-										if (method.getReturnType().equals(GridObject.class))
-										{
-											event.getClass().getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class).invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
-										}
-									}
-								} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
-								{
-									e.printStackTrace();
-								}
-
-								dispatcher.dispatch(event);
-							}
+							dispatcher.dispatch(convertToLocalEvent((Event) object));
 						}
-					} catch (IOException | ClassNotFoundException e)
-					{
-						e.printStackTrace();
 					}
 				}
 			}.start();
 		}
+	}
+
+	private Event convertToLocalEvent(Event event)
+	{
+		try
+		{
+			for (Method method : event.getClass().getMethods())
+			{
+				if (method.getReturnType().equals(GridObject.class))
+				{
+					event.getClass()
+					     .getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
+					     .invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
+				}
+			}
+		}
+		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		{
+			e.printStackTrace();
+		}
+
+		return event;
 	}
 
 	private GridObject getLocalGridObject(GridObject remoteGridObject)
@@ -139,17 +141,9 @@ public class Server
 
 	public void send(Object object)
 	{
-		for (Socket connection : connections)
+		for (Connection connection : connections)
 		{
-			try
-			{
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(connection.getOutputStream());
-
-				objectOutputStream.writeObject(object);
-			} catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			connection.write(object);
 		}
 	}
 

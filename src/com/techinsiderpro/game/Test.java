@@ -45,7 +45,7 @@ public class Test
 		System.out.println(gridObjects.get(0).getDirection());
 	}
 
-	private void convertToLocalEvent(Event event)
+	private Event convertToLocalEvent(Event event)
 	{
 		try
 		{
@@ -63,6 +63,8 @@ public class Test
 		{
 			e.printStackTrace();
 		}
+
+		return event;
 	}
 
 	private GridObject getLocalGridObject(GridObject remoteGridObject)

@@ -2,21 +2,24 @@ package com.techinsiderpro.game;
 
 import com.techinsiderpro.events.Dispatcher;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Game {
 
     private Dispatcher dispatcher;
-    private GridObjectContainer gridObjectContainer;
+    private List<GridObject> gridObjectContainer;
 
     public Game(int width, int height) {
         dispatcher = new Dispatcher();
-        gridObjectContainer = new ArrayGridObjectContainer(width, height);
+        gridObjectContainer = new ArrayList<>();
     }
 
     public Dispatcher getDispatcher() {
         return dispatcher;
     }
 
-    public GridObjectContainer getGridObjectContainer() {
+    public List<GridObject> getGridObjectContainer() {
         return gridObjectContainer;
     }
 }
