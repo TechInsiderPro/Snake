@@ -32,4 +32,9 @@ public class GridObject implements Serializable
 	{
 		this.direction = direction;
 	}
+
+	public boolean equals(Object object)
+	{
+		return object instanceof GridObject && ((GridObject) object).getPosition().equals(position);
+	}
 }

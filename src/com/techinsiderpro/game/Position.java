@@ -21,4 +21,10 @@ public class Position implements Serializable
 	{
 		return y;
 	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		return obj instanceof Position && this.y == ((Position) obj).y && this.x == ((Position) obj).x;
+	}
 }
