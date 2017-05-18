@@ -8,7 +8,7 @@ import java.net.MulticastSocket;
 public class MulticastReceiver
 {
     protected MulticastSocket multicastSocket;
-    protected InetAddress inetAddress;
+    public InetAddress inetAddress;
 
     public MulticastReceiver(String ip, int port)
     {

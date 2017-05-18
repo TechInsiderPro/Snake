@@ -39,14 +39,13 @@ public class Server
 		{
 			try
 			{
-				Thread.sleep(200);
-			}
-			catch (InterruptedException e)
+				Thread.sleep(250);
+			} catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
 			send(game.getGridObjectContainer().get(0));
-			System.out.println(game.getGridObjectContainer().get(0).getDirection());
+			System.out.println("Current direction : " + game.getGridObjectContainer().get(0).getDirection());
 		}
 	}
 
@@ -56,7 +55,7 @@ public class Server
 		{
 			MulticastReceiver multicastReceiver = new MulticastReceiver(ip, port);
 
-			//System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
+			System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
 
 			while (connections.size() < clientCount)
 			{
@@ -65,13 +64,12 @@ public class Server
 
 				Thread.sleep(1000);
 
-				Connection connection = new Connection(packet.getAddress(), port);
+				Connection connection = new Connection(packet.getAddress(), port + 1);
 				connections.add(connection);
 
 				System.out.println("Added new connection");
 			}
-		}
-		catch (IOException | InterruptedException e)
+		} catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -113,12 +111,11 @@ public class Server
 				if (method.getReturnType().equals(GridObject.class))
 				{
 					event.getClass()
-					     .getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
-					     .invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
+							.getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
+							.invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
 				}
 			}
-		}
-		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
 		{
 			e.printStackTrace();
 		}

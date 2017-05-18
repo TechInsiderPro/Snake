@@ -31,6 +31,7 @@ public class MulticastBroadcaster
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             packet.setAddress(inetAddress);
             packet.setPort(port);
+            System.out.println(packet.toString());
             datagramSocket.send(packet);
         }
         catch (IOException e)
