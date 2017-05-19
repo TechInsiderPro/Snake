@@ -1,7 +1,9 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.server.events;
 
-import com.techinsiderpro.events.Dispatcher;
-import com.techinsiderpro.events.Handler;
+import com.techinsiderpro.common.game.Direction;
+import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
+import com.techinsiderpro.common.events.Dispatcher;
+import com.techinsiderpro.common.events.Handler;
 
 public class MovementHandler
 {

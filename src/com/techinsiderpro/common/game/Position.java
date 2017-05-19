@@ -1,4 +1,4 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.common.game;
 
 import java.io.Serializable;
 

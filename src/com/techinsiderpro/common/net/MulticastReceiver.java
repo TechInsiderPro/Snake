@@ -1,4 +1,4 @@
-package com.techinsiderpro.net;
+package com.techinsiderpro.common.net;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

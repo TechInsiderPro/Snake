@@ -1,28 +1,37 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.server;
 
-import com.techinsiderpro.events.Dispatcher;
-import com.techinsiderpro.events.Event;
-import com.techinsiderpro.net.Connection;
-import com.techinsiderpro.net.MulticastReceiver;
+import com.techinsiderpro.common.events.Dispatcher;
+import com.techinsiderpro.common.events.Event;
+import com.techinsiderpro.common.game.Direction;
+import com.techinsiderpro.common.game.GridObject;
+import com.techinsiderpro.common.game.Position;
+import com.techinsiderpro.common.net.Connection;
+import com.techinsiderpro.common.net.MulticastReceiver;
+import com.techinsiderpro.common.ui.MainWindow;
+import com.techinsiderpro.server.events.MovementHandler;
+import com.techinsiderpro.server.game.Game;
 
-import java.io.IOException;
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class Server
 {
 
-	private Collection<Connection> connections;
+	private List<Connection> connections;
 	private Game game;
+	private MainWindow mainWindow;
 
 	private Server(int clientCount, String ip, int port)
 	{
 		connections = new ArrayList<>();
 
 		//Before Setup
+		setupWindow();
 		waitForClients(clientCount, ip, port);
 
 		//Setup
@@ -49,6 +58,28 @@ public class Server
 		}
 	}
 
+	private void setupWindow()
+	{
+		mainWindow = new MainWindow(720, 480);
+		mainWindow.setContentPane(new JPanel()
+		{
+			{
+				//setFont(new Font("ariel", Font.PLAIN, getHeight() / 10));
+			}
+
+			@Override
+			public void paint(Graphics g)
+			{
+				super.paint(g);
+
+				for (int i = 0; i < connections.size(); i++)
+				{
+					g.drawString(connections.get(i).getInetAddress().toString(), 0, getHeight() / connections.size() * (i + 1));
+				}
+			}
+		});
+	}
+
 	private void waitForClients(int clientCount, String ip, int port)
 	{
 		try
@@ -67,9 +98,11 @@ public class Server
 				Connection connection = new Connection(packet.getAddress(), port + 1);
 				connections.add(connection);
 
-				System.out.println("Added new connection");
+				System.out.println("Added new connection : " + connection.getInetAddress().toString());
+
+				mainWindow.repaint();
 			}
-		} catch (IOException | InterruptedException e)
+		} catch (InterruptedException e)
 		{
 			e.printStackTrace();
 		}

@@ -1,6 +1,7 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.common.events;
 
-import com.techinsiderpro.events.Event;
+import com.techinsiderpro.common.game.Direction;
+import com.techinsiderpro.common.game.GridObject;
 
 import java.io.Serializable;
 

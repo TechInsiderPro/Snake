@@ -1,4 +1,4 @@
-package com.techinsiderpro.events;
+package com.techinsiderpro.common.events;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package com.techinsiderpro.events;
+package com.techinsiderpro.common.events;
 
 public interface Handler<E extends Event>
 {

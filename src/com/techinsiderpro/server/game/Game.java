@@ -1,6 +1,7 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.server.game;
 
-import com.techinsiderpro.events.Dispatcher;
+import com.techinsiderpro.common.game.GridObject;
+import com.techinsiderpro.common.events.Dispatcher;
 
 import java.util.ArrayList;
 import java.util.List;

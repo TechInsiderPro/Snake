@@ -1,6 +1,5 @@
-package com.techinsiderpro.game;
+package com.techinsiderpro.common.game;
 
-import java.io.ObjectInputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
