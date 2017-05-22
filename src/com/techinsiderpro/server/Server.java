@@ -1,15 +1,18 @@
 package com.techinsiderpro.server;
 
-import com.techinsiderpro.common.events.Dispatcher;
-import com.techinsiderpro.common.events.Event;
+import com.techinsiderpro.common.eventsys.Dispatcher;
+import com.techinsiderpro.common.eventsys.events.DirectionChangeRequestEvent;
+import com.techinsiderpro.common.eventsys.events.Event;
+import com.techinsiderpro.common.eventsys.events.PositionChangeRequestEvent;
+import com.techinsiderpro.common.eventsys.handlers.DirectionChangeRequestHandler;
+import com.techinsiderpro.common.eventsys.handlers.PositionChangeRequestHandler;
 import com.techinsiderpro.common.game.Direction;
-import com.techinsiderpro.common.game.GridObject;
+import com.techinsiderpro.common.game.Game;
 import com.techinsiderpro.common.game.Position;
+import com.techinsiderpro.common.game.objects.GridObject;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastReceiver;
-import com.techinsiderpro.common.ui.MainWindow;
-import com.techinsiderpro.server.events.MovementHandler;
-import com.techinsiderpro.server.game.Game;
+import com.techinsiderpro.common.ui.Window;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +27,7 @@ public class Server
 
 	private List<Connection> connections;
 	private Game game;
-	private MainWindow mainWindow;
+	private Window window;
 
 	private Server(int clientCount, String ip, int port)
 	{
@@ -36,32 +39,37 @@ public class Server
 
 		//Setup
 		game = new Game(25, 25);
-		game.getGridObjectContainer().add(new GridObject(new Position(1, 1), Direction.DOWN));
-		new MovementHandler(game.getDispatcher());
+
+		GridObject gridObject = new GridObject(new Position(1, 1), Direction.DOWN);
+
+		game.getGridObjectContainer().add(gridObject);
+		game.getDispatcher().registerHandler(new DirectionChangeRequestHandler());
+		game.getDispatcher().registerHandler(new PositionChangeRequestHandler(game.getGridObjectContainer()));
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
 
-		System.out.println(game.getGridObjectContainer().get(0));
+		System.out.println(gridObject.getDirection());
 
 		while (true)
 		{
 			try
 			{
 				Thread.sleep(250);
-			} catch (InterruptedException e)
+			}
+			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
-			send(game.getGridObjectContainer().get(0));
-			System.out.println("Current direction : " + game.getGridObjectContainer().get(0).getDirection());
+			send(game.getGridObjectContainer());
+			System.out.println("Current direction : " + gridObject.getDirection());
 		}
 	}
 
 	private void setupWindow()
 	{
-		mainWindow = new MainWindow(720, 480);
-		mainWindow.setContentPane(new JPanel()
+		window = new Window(720, 480);
+		window.setContentPane(new JPanel()
 		{
 			{
 				//setFont(new Font("ariel", Font.PLAIN, getHeight() / 10));
@@ -74,7 +82,8 @@ public class Server
 
 				for (int i = 0; i < connections.size(); i++)
 				{
-					g.drawString(connections.get(i).getInetAddress().toString(), 0, getHeight() / connections.size() * (i + 1));
+					g.drawString(connections.get(i).getInetAddress().toString(), 0,
+					             getHeight() / connections.size() * (i + 1));
 				}
 			}
 		});
@@ -100,9 +109,10 @@ public class Server
 
 				System.out.println("Added new connection : " + connection.getInetAddress().toString());
 
-				mainWindow.repaint();
+				window.repaint();
 			}
-		} catch (InterruptedException e)
+		}
+		catch (InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -119,7 +129,7 @@ public class Server
 				{
 					super.run();
 
-					while (this.isAlive())
+					while (this.isAlive() && connection.isConnected())
 					{
 						Object object = connection.read();
 
@@ -144,11 +154,12 @@ public class Server
 				if (method.getReturnType().equals(GridObject.class))
 				{
 					event.getClass()
-							.getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
-							.invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
+					     .getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
+					     .invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
 				}
 			}
-		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		}
+		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
 		{
 			e.printStackTrace();
 		}
