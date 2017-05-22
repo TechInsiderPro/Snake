@@ -1,6 +1,6 @@
-package com.techinsiderpro.common.eventsys.handlers;
+package com.techinsiderpro.common.events.handlers;
 
-import com.techinsiderpro.common.eventsys.events.DirectionChangeRequestEvent;
+import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
 import com.techinsiderpro.common.game.Direction;
 
 public class DirectionChangeRequestHandler

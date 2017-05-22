@@ -1,8 +1,8 @@
-package com.techinsiderpro.common.eventsys;
+package com.techinsiderpro.common.events.dispatchers;
 
-import com.techinsiderpro.common.eventsys.events.ConsumableEvent;
-import com.techinsiderpro.common.eventsys.events.Event;
-import com.techinsiderpro.common.eventsys.handlers.Handler;
+import com.techinsiderpro.common.events.ConsumableEvent;
+import com.techinsiderpro.common.events.Event;
+import com.techinsiderpro.common.events.handlers.Handler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

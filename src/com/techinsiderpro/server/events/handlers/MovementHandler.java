@@ -1,4 +1,4 @@
-package com.techinsiderpro.server.events;
+package com.techinsiderpro.server.events.handlers;
 
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.events.DirectionChangeRequestEvent;

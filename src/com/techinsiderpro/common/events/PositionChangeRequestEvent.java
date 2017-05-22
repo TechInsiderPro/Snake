@@ -1,4 +1,4 @@
-package com.techinsiderpro.common.eventsys.events;
+package com.techinsiderpro.common.events;
 
 import com.techinsiderpro.common.game.Position;
 import com.techinsiderpro.common.game.objects.GridObject;
