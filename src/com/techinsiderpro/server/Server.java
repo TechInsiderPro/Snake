@@ -1,11 +1,9 @@
 package com.techinsiderpro.server;
 
-import com.techinsiderpro.common.eventsys.Dispatcher;
-import com.techinsiderpro.common.eventsys.events.DirectionChangeRequestEvent;
-import com.techinsiderpro.common.eventsys.events.Event;
-import com.techinsiderpro.common.eventsys.events.PositionChangeRequestEvent;
-import com.techinsiderpro.common.eventsys.handlers.DirectionChangeRequestHandler;
-import com.techinsiderpro.common.eventsys.handlers.PositionChangeRequestHandler;
+import com.techinsiderpro.common.events.dispatchers.Dispatcher;
+import com.techinsiderpro.common.events.Event;
+import com.techinsiderpro.common.events.handlers.DirectionChangeRequestHandler;
+import com.techinsiderpro.common.events.handlers.PositionChangeRequestHandler;
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.Game;
 import com.techinsiderpro.common.game.Position;

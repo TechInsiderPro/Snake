@@ -1,9 +1,7 @@
-package com.techinsiderpro.common.eventsys.events;
+package com.techinsiderpro.common.events;
 
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.objects.GridObject;
-
-import java.io.Serializable;
 
 public class DirectionChangeRequestEvent extends ConsumableEvent
 {

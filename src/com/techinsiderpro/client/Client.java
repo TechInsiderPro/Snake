@@ -1,6 +1,6 @@
 package com.techinsiderpro.client;
 
-import com.techinsiderpro.common.eventsys.events.DirectionChangeRequestEvent;
+import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.objects.GridObject;
 import com.techinsiderpro.common.net.Connection;

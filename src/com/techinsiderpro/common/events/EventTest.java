@@ -1,7 +1,7 @@
-package com.techinsiderpro.common.eventsys.events;
+package com.techinsiderpro.common.events;
 
-import com.techinsiderpro.common.eventsys.Dispatcher;
-import com.techinsiderpro.common.eventsys.handlers.DirectionChangeRequestHandler;
+import com.techinsiderpro.common.events.dispatchers.Dispatcher;
+import com.techinsiderpro.common.events.handlers.DirectionChangeRequestHandler;
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.Position;
 import com.techinsiderpro.common.game.objects.GridObject;

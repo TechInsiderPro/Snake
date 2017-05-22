@@ -1,6 +1,6 @@
-package com.techinsiderpro.common.eventsys.handlers;
+package com.techinsiderpro.common.events.handlers;
 
-import com.techinsiderpro.common.eventsys.events.PositionChangeRequestEvent;
+import com.techinsiderpro.common.events.PositionChangeRequestEvent;
 import com.techinsiderpro.common.game.Position;
 import com.techinsiderpro.common.game.objects.containers.GridObjectContainer;
 

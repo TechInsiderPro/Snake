@@ -1,12 +1,8 @@
 package com.techinsiderpro.common.game;
 
-import com.techinsiderpro.common.eventsys.Dispatcher;
-import com.techinsiderpro.common.game.objects.GridObject;
+import com.techinsiderpro.common.events.dispatchers.Dispatcher;
 import com.techinsiderpro.common.game.objects.containers.GridObjectContainer;
 import com.techinsiderpro.common.game.objects.containers.ListGridObjectContainer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Game
 {
