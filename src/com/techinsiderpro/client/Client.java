@@ -1,8 +1,8 @@
 package com.techinsiderpro.client;
 
+import com.techinsiderpro.common.eventsys.events.DirectionChangeRequestEvent;
 import com.techinsiderpro.common.game.Direction;
-import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
-import com.techinsiderpro.common.game.GridObject;
+import com.techinsiderpro.common.game.objects.GridObject;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastBroadcaster;
 
@@ -33,7 +33,8 @@ public class Client
 				{
 					Socket socket = serverSocket.accept();
 					connection = new Connection(socket);
-				} catch (SocketTimeoutException e)
+				}
+				catch (SocketTimeoutException e)
 				{
 					System.out.println("No response");
 				}
@@ -51,7 +52,8 @@ public class Client
 				System.out.println(direction);
 				connection.write(new DirectionChangeRequestEvent(direction, gridObject));
 			}
-		} catch (IOException | InterruptedException e)
+		}
+		catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
