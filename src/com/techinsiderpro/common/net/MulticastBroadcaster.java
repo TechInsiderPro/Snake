@@ -1,9 +1,9 @@
-package com.techinsiderpro.net;
+package com.techinsiderpro.common.net;
 
 import java.io.IOException;
 import java.net.*;
 
-class MulticastBroadcaster
+public class MulticastBroadcaster
 {
     protected DatagramSocket datagramSocket;
     protected InetAddress inetAddress;
@@ -24,13 +24,14 @@ class MulticastBroadcaster
         this.port = port;
     }
 
-    protected void send(byte[] msg)
+    public void send(byte[] msg)
     {
         try
         {
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             packet.setAddress(inetAddress);
             packet.setPort(port);
+            System.out.println(packet.toString());
             datagramSocket.send(packet);
         }
         catch (IOException e)
