@@ -51,7 +51,7 @@ public class Dispatcher
 				{
 					try
 					{
-						getHandlerMethod(handler, event.getClass()).invoke(event);
+						getHandlerMethod(handler, event.getClass()).invoke(handler, event);
 					}
 					catch (IllegalAccessException | InvocationTargetException e)
 					{
