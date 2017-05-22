@@ -1,4 +1,7 @@
-package com.techinsiderpro.common.game;
+package com.techinsiderpro.common.game.objects;
+
+import com.techinsiderpro.common.game.Direction;
+import com.techinsiderpro.common.game.Position;
 
 import java.io.Serializable;
 

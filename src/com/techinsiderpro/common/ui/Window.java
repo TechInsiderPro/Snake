@@ -2,9 +2,9 @@ package com.techinsiderpro.common.ui;
 
 import javax.swing.*;
 
-public class MainWindow extends JFrame
+public class Window extends JFrame
 {
-	public MainWindow(int width, int height)
+	public Window(int width, int height)
 	{
 		super();
 
