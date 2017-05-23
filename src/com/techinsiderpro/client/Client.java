@@ -3,6 +3,7 @@ package com.techinsiderpro.client;
 import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.objects.GridObject;
+import com.techinsiderpro.common.game.objects.containers.GridObjectContainer;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastBroadcaster;
 
@@ -24,7 +25,7 @@ public class Client
 
 			serverSocket.setSoTimeout(1000);
 
-			while (connection == null || !connection.isConnected())
+			while (connection == null)
 			{
 				multicastBroadcaster.send("Sup".getBytes());
 				System.out.println("Sent sup");
@@ -33,8 +34,7 @@ public class Client
 				{
 					Socket socket = serverSocket.accept();
 					connection = new Connection(socket);
-				}
-				catch (SocketTimeoutException e)
+				} catch (SocketTimeoutException e)
 				{
 					System.out.println("No response");
 				}
@@ -42,18 +42,20 @@ public class Client
 
 			System.out.println("Connected");
 
-			while (true)
+			while (connection.isConnected())
 			{
 				Thread.sleep(300);
 
-				GridObject gridObject = (GridObject) connection.read();
+				GridObjectContainer gridObjectContainer = (GridObjectContainer) connection.read();
 
-				Direction direction = Direction.values()[new Random().nextInt(Direction.values().length)];
-				System.out.println(direction);
-				connection.write(new DirectionChangeRequestEvent(direction, gridObject));
+				for (GridObject gridObject : gridObjectContainer)
+				{
+					Direction direction = Direction.values()[new Random().nextInt(Direction.values().length)];
+					if (connection.isConnected())
+						connection.write(new DirectionChangeRequestEvent(direction, gridObject));
+				}
 			}
-		}
-		catch (IOException | InterruptedException e)
+		} catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}

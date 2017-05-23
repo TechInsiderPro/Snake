@@ -1,15 +1,16 @@
 package com.techinsiderpro.server;
 
-import com.techinsiderpro.common.events.dispatchers.Dispatcher;
 import com.techinsiderpro.common.events.Event;
-import com.techinsiderpro.common.events.handlers.DirectionChangeRequestHandler;
-import com.techinsiderpro.common.events.handlers.PositionChangeRequestHandler;
+import com.techinsiderpro.common.events.PositionChangeRequestEvent;
+import com.techinsiderpro.common.events.dispatchers.Dispatcher;
+import com.techinsiderpro.common.events.handlers.MovementHandler;
 import com.techinsiderpro.common.game.Direction;
 import com.techinsiderpro.common.game.Game;
 import com.techinsiderpro.common.game.Position;
 import com.techinsiderpro.common.game.objects.GridObject;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastReceiver;
+import com.techinsiderpro.common.ui.GridObjectContainerPanel;
 import com.techinsiderpro.common.ui.Window;
 
 import javax.swing.*;
@@ -35,32 +36,42 @@ public class Server
 		setupWindow();
 		waitForClients(clientCount, ip, port);
 
+		int gameSize = 25;
+
 		//Setup
-		game = new Game(25, 25);
+		game = new Game(gameSize, gameSize);
 
-		GridObject gridObject = new GridObject(new Position(1, 1), Direction.DOWN);
+		for (int i = 0; i < connections.size(); i++)
+		{
+			game.getGridObjectContainer().add(new GridObject(new Position(gameSize / connections.size() * i, gameSize / 2 + i % 2), (i % 2 == 0) ? Direction.DOWN : Direction.UP));
+		}
 
-		game.getGridObjectContainer().add(gridObject);
-		game.getDispatcher().registerHandler(new DirectionChangeRequestHandler());
-		game.getDispatcher().registerHandler(new PositionChangeRequestHandler(game.getGridObjectContainer()));
+		game.getDispatcher().registerHandler(new MovementHandler(game.getGridObjectContainer()));
+		game.getGridObjectContainer().add(new GridObject(new Position(10, 10), Direction.DOWN));
+
+		window.setContentPane(new GridObjectContainerPanel(game.getGridObjectContainer()));
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
-
-		System.out.println(gridObject.getDirection());
 
 		while (true)
 		{
 			try
 			{
 				Thread.sleep(250);
-			}
-			catch (InterruptedException e)
+
+				send(game.getGridObjectContainer());
+
+				for (GridObject gridObject : game.getGridObjectContainer())
+					game.getDispatcher().dispatch(new PositionChangeRequestEvent(gridObject,
+							new Position(gridObject.getPosition().getX() + gridObject.getDirection().getxShift(),
+									gridObject.getPosition().getY() + gridObject.getDirection().getyShift())));
+
+				window.repaint();
+			} catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
-			send(game.getGridObjectContainer());
-			System.out.println("Current direction : " + gridObject.getDirection());
 		}
 	}
 
@@ -70,7 +81,7 @@ public class Server
 		window.setContentPane(new JPanel()
 		{
 			{
-				//setFont(new Font("ariel", Font.PLAIN, getHeight() / 10));
+				setFont(new Font("ariel", Font.PLAIN, 96));
 			}
 
 			@Override
@@ -81,7 +92,7 @@ public class Server
 				for (int i = 0; i < connections.size(); i++)
 				{
 					g.drawString(connections.get(i).getInetAddress().toString(), 0,
-					             getHeight() / connections.size() * (i + 1));
+							getHeight() / connections.size() * (i + 1));
 				}
 			}
 		});
@@ -109,8 +120,7 @@ public class Server
 
 				window.repaint();
 			}
-		}
-		catch (InterruptedException e)
+		} catch (InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -152,12 +162,11 @@ public class Server
 				if (method.getReturnType().equals(GridObject.class))
 				{
 					event.getClass()
-					     .getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
-					     .invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
+							.getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
+							.invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
 				}
 			}
-		}
-		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
 		{
 			e.printStackTrace();
 		}

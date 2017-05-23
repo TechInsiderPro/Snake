@@ -13,7 +13,7 @@ public class Game
 	public Game(int width, int height)
 	{
 		dispatcher = new Dispatcher();
-		gridObjectContainer = new ListGridObjectContainer();
+		gridObjectContainer = new ListGridObjectContainer(width, height);
 	}
 
 	public Dispatcher getDispatcher()

@@ -16,6 +16,10 @@ public interface GridObjectContainer extends Collection<GridObject>
 
 	boolean isEmptyAt(Position position);
 
+	int getWidth();
+
+	int getHeight();
+
 	@Override
 	void clear();
 
