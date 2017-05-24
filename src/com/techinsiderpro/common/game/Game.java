@@ -1,19 +1,21 @@
 package com.techinsiderpro.common.game;
 
-import com.techinsiderpro.common.events.dispatchers.Dispatcher;
-import com.techinsiderpro.common.game.objects.containers.GridObjectContainer;
-import com.techinsiderpro.common.game.objects.containers.ListGridObjectContainer;
+import com.techinsiderpro.common.event.dispatcher.Dispatcher;
+import com.techinsiderpro.common.game.entity.container.EntityContainer;
+import com.techinsiderpro.common.game.entity.container.ListEntityContainer;
 
-public class Game
+import java.io.Serializable;
+
+public class Game implements Serializable
 {
 
 	private Dispatcher dispatcher;
-	private GridObjectContainer gridObjectContainer;
+	private EntityContainer entityContainer;
 
 	public Game(int width, int height)
 	{
 		dispatcher = new Dispatcher();
-		gridObjectContainer = new ListGridObjectContainer(width, height);
+		entityContainer = new ListEntityContainer(width, height);
 	}
 
 	public Dispatcher getDispatcher()
@@ -21,8 +23,8 @@ public class Game
 		return dispatcher;
 	}
 
-	public GridObjectContainer getGridObjectContainer()
+	public EntityContainer getEntityContainer()
 	{
-		return gridObjectContainer;
+		return entityContainer;
 	}
 }

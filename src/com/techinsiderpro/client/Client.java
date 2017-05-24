@@ -1,11 +1,14 @@
 package com.techinsiderpro.client;
 
-import com.techinsiderpro.common.events.DirectionChangeRequestEvent;
-import com.techinsiderpro.common.game.Direction;
-import com.techinsiderpro.common.game.objects.GridObject;
-import com.techinsiderpro.common.game.objects.containers.GridObjectContainer;
+import com.techinsiderpro.common.event.DirectionChangeRequestEvent;
+import com.techinsiderpro.common.game.entity.Entity;
+import com.techinsiderpro.common.game.entity.component.DirectionComponent;
+import com.techinsiderpro.common.game.entity.component.PositionComponent;
+import com.techinsiderpro.common.game.entity.container.EntityContainer;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastBroadcaster;
+import com.techinsiderpro.common.ui.EntityContainerPanel;
+import com.techinsiderpro.common.ui.Window;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,8 +18,13 @@ import java.util.Random;
 
 public class Client
 {
-	public static void main(String[] args)
+	public Client()
 	{
+		Window window = new Window(720, 720);
+		EntityContainerPanel entityContainerPanel = new EntityContainerPanel();
+
+		window.setContentPane(entityContainerPanel);
+
 		try
 		{
 			MulticastBroadcaster multicastBroadcaster = new MulticastBroadcaster("230.1.1.1", 12345);
@@ -34,7 +42,8 @@ public class Client
 				{
 					Socket socket = serverSocket.accept();
 					connection = new Connection(socket);
-				} catch (SocketTimeoutException e)
+				}
+				catch (SocketTimeoutException e)
 				{
 					System.out.println("No response");
 				}
@@ -42,22 +51,34 @@ public class Client
 
 			System.out.println("Connected");
 
-			while (connection.isConnected())
+			while (true)
 			{
-				Thread.sleep(300);
+				Thread.sleep(16);
 
-				GridObjectContainer gridObjectContainer = (GridObjectContainer) connection.read();
+				EntityContainer entityContainer = (EntityContainer) connection.read();
 
-				for (GridObject gridObject : gridObjectContainer)
-				{
-					Direction direction = Direction.values()[new Random().nextInt(Direction.values().length)];
-					if (connection.isConnected())
-						connection.write(new DirectionChangeRequestEvent(direction, gridObject));
-				}
+				entityContainerPanel.setEntityContainer(entityContainer);
+				window.repaint();
+
+//				for (Entity entity : entityContainer)
+//				{
+				Entity entity = (Entity) entityContainer.toArray()[0];
+
+				System.out.println(entity.getComponent(PositionComponent.class).getX());
+				DirectionComponent directionComponent = DirectionComponent.values()[new Random().nextInt(
+						DirectionComponent.values().length)];
+				connection.write(new DirectionChangeRequestEvent(directionComponent, entity));
+//				}
 			}
-		} catch (IOException | InterruptedException e)
+		}
+		catch (IOException | InterruptedException e)
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public static void main(String[] args)
+	{
+		new Client();
 	}
 }

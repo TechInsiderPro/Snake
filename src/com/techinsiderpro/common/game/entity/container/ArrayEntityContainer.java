@@ -1,49 +1,49 @@
-package com.techinsiderpro.common.game.objects.containers;
+package com.techinsiderpro.common.game.entity.container;
 
-import com.techinsiderpro.common.game.Position;
-import com.techinsiderpro.common.game.objects.GridObject;
+import com.techinsiderpro.common.game.entity.Entity;
+import com.techinsiderpro.common.game.entity.component.PositionComponent;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-public class ArrayGridObjectContainer implements GridObjectContainer
+public class ArrayEntityContainer implements EntityContainer
 {
-	private GridObject[][] grid;
+	private Entity[][] grid;
 
-	public ArrayGridObjectContainer(int width, int height)
+	public ArrayEntityContainer(int width, int height)
 	{
-		this.grid = new GridObject[height][width];
+		this.grid = new Entity[height][width];
 	}
 
 	@Override
-	public void setPositionTo(GridObject gridObject)
+	public void setPositionTo(Entity entity)
 	{
-		remove(gridObject.getPosition());
-		add(gridObject);
+		remove(entity.getComponent(PositionComponent.class));
+		add(entity);
 	}
 
 	@Override
-	public GridObject getGridObjectAt(Position position)
+	public Entity getGridObjectAt(PositionComponent positionComponent)
 	{
-		return grid[position.getY()][position.getX()];
+		return grid[positionComponent.getY()][positionComponent.getX()];
 	}
 
 	@Override
-	public void removeGridObjectAt(Position position)
+	public void removeGridObjectAt(PositionComponent positionComponent)
 	{
-		grid[position.getY()][position.getX()] = null;
+		grid[positionComponent.getY()][positionComponent.getX()] = null;
 	}
 
 	@Override
-	public boolean isEmptyAt(Position position)
+	public boolean isEmptyAt(PositionComponent positionComponent)
 	{
-		return getGridObjectAt(position) == null;
+		return getGridObjectAt(positionComponent) == null;
 	}
 
 	@Override
 	public void clear()
 	{
-		grid = new GridObject[getHeight()][getWidth()];
+		grid = new Entity[getHeight()][getWidth()];
 	}
 
 	@Override
@@ -55,11 +55,11 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	@Override
 	public boolean isEmpty()
 	{
-		for (GridObject[] row : grid)
+		for (Entity[] row : grid)
 		{
-			for (GridObject gridObject : row)
+			for (Entity entity : row)
 			{
-				if (gridObject != null)
+				if (entity != null)
 				{
 					return false;
 				}
@@ -72,11 +72,11 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	@Override
 	public boolean contains(Object o)
 	{
-		for (GridObject[] row : grid)
+		for (Entity[] row : grid)
 		{
-			for (GridObject gridObject : row)
+			for (Entity entity : row)
 			{
-				if (gridObject.equals(o))
+				if (entity.equals(o))
 				{
 					return true;
 				}
@@ -87,9 +87,9 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	}
 
 	@Override
-	public Iterator<GridObject> iterator()
+	public Iterator<Entity> iterator()
 	{
-		return new Iterator<GridObject>()
+		return new Iterator<Entity>()
 		{
 			private int c, r;
 
@@ -100,7 +100,7 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 				{
 					for (; c < getWidth(); c++)
 					{
-						if (!isEmptyAt(new Position(c, r)))
+						if (!isEmptyAt(new PositionComponent(c, r)))
 						{
 							return true;
 						}
@@ -111,15 +111,15 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 			}
 
 			@Override
-			public GridObject next()
+			public Entity next()
 			{
 				for (; r < getHeight(); r++)
 				{
 					for (; c < getWidth(); c++)
 					{
-						if (!isEmptyAt(new Position(c, r)))
+						if (!isEmptyAt(new PositionComponent(c, r)))
 						{
-							return getGridObjectAt(new Position(c, r));
+							return getGridObjectAt(new PositionComponent(c, r));
 						}
 					}
 				}
@@ -130,7 +130,7 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 			@Override
 			public void remove()
 			{
-				removeGridObjectAt(new Position(c, r));
+				removeGridObjectAt(new PositionComponent(c, r));
 			}
 		};
 	}
@@ -166,11 +166,11 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	}
 
 	@Override
-	public boolean add(GridObject gridObject)
+	public boolean add(Entity entity)
 	{
-		if (isEmptyAt(gridObject.getPosition()))
+		if (isEmptyAt(entity.getComponent(PositionComponent.class)))
 		{
-			grid[gridObject.getPosition().getY()][gridObject.getPosition().getX()] = gridObject;
+			grid[entity.getComponent(PositionComponent.class).getY()][entity.getComponent(PositionComponent.class).getX()] = entity;
 			return true;
 		}
 
@@ -180,7 +180,7 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	@Override
 	public boolean remove(Object o)
 	{
-		removeGridObjectAt(((GridObject) o).getPosition());
+		removeGridObjectAt(((Entity) o).getComponent(PositionComponent.class));
 		return true;
 	}
 
@@ -191,11 +191,11 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends GridObject> c)
+	public boolean addAll(Collection<? extends Entity> c)
 	{
-		for (GridObject gridObject : c)
+		for (Entity entity : c)
 		{
-			add(gridObject);
+			add(entity);
 		}
 
 		return true;
@@ -219,9 +219,9 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 		{
 			for (int c = 0; c < getWidth(); c++)
 			{
-				if (collection.contains(getGridObjectAt(new Position(c, r))))
+				if (collection.contains(getGridObjectAt(new PositionComponent(c, r))))
 				{
-					removeGridObjectAt(new Position(c, r));
+					removeGridObjectAt(new PositionComponent(c, r));
 				}
 			}
 		}
@@ -229,13 +229,22 @@ public class ArrayGridObjectContainer implements GridObjectContainer
 		return true;
 	}
 
+	@Override
 	public int getWidth()
 	{
 		return grid[0].length;
 	}
 
+	@Override
 	public int getHeight()
 	{
 		return grid.length;
+	}
+
+	@Override
+	public boolean isWithinBounds(PositionComponent positionComponent)
+	{
+		return positionComponent.getX() < getWidth() && positionComponent.getX() >= 0 && positionComponent.getY() < getHeight() &&
+		       positionComponent.getY() >= 0;
 	}
 }

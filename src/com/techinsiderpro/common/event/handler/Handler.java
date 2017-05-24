@@ -1,6 +1,6 @@
-package com.techinsiderpro.common.events.handlers;
+package com.techinsiderpro.common.event.handler;
 
-import com.techinsiderpro.common.events.Event;
+import com.techinsiderpro.common.event.Event;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

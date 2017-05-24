@@ -1,4 +1,4 @@
-package com.techinsiderpro.common.events;
+package com.techinsiderpro.common.event;
 
 public class ConsumableEvent implements Event
 {

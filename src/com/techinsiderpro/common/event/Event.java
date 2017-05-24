@@ -1,4 +1,4 @@
-package com.techinsiderpro.common.events;
+package com.techinsiderpro.common.event;
 
 import java.io.Serializable;
 

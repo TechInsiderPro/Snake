@@ -1,8 +1,8 @@
-package com.techinsiderpro.common.events.dispatchers;
+package com.techinsiderpro.common.event.dispatcher;
 
-import com.techinsiderpro.common.events.ConsumableEvent;
-import com.techinsiderpro.common.events.Event;
-import com.techinsiderpro.common.events.handlers.Handler;
+import com.techinsiderpro.common.event.ConsumableEvent;
+import com.techinsiderpro.common.event.Event;
+import com.techinsiderpro.common.event.handler.Handler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,6 +51,7 @@ public class Dispatcher
 				{
 					try
 					{
+						System.out.println("Dispatched " + event.getClass().getSimpleName() + " to " + handler.getClass().getSimpleName());
 						getHandlerMethod(handler, event.getClass()).invoke(handler, event);
 					}
 					catch (IllegalAccessException | InvocationTargetException e)

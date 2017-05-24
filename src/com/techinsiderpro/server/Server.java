@@ -1,16 +1,19 @@
 package com.techinsiderpro.server;
 
-import com.techinsiderpro.common.events.Event;
-import com.techinsiderpro.common.events.PositionChangeRequestEvent;
-import com.techinsiderpro.common.events.dispatchers.Dispatcher;
-import com.techinsiderpro.common.events.handlers.MovementHandler;
-import com.techinsiderpro.common.game.Direction;
+import com.techinsiderpro.common.event.Event;
+import com.techinsiderpro.server.event.UpdateEvent;
+import com.techinsiderpro.common.event.dispatcher.Dispatcher;
+import com.techinsiderpro.server.event.handler.CollisionHandler;
+import com.techinsiderpro.server.event.handler.MovementHandler;
+import com.techinsiderpro.server.event.handler.UpdateHandler;
 import com.techinsiderpro.common.game.Game;
-import com.techinsiderpro.common.game.Position;
-import com.techinsiderpro.common.game.objects.GridObject;
+import com.techinsiderpro.common.game.entity.Entity;
+import com.techinsiderpro.common.game.entity.Player;
+import com.techinsiderpro.common.game.entity.component.DirectionComponent;
+import com.techinsiderpro.common.game.entity.component.PositionComponent;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastReceiver;
-import com.techinsiderpro.common.ui.GridObjectContainerPanel;
+import com.techinsiderpro.common.ui.EntityContainerPanel;
 import com.techinsiderpro.common.ui.Window;
 
 import javax.swing.*;
@@ -43,13 +46,15 @@ public class Server
 
 		for (int i = 0; i < connections.size(); i++)
 		{
-			game.getGridObjectContainer().add(new GridObject(new Position(gameSize / connections.size() * i, gameSize / 2 + i % 2), (i % 2 == 0) ? Direction.DOWN : Direction.UP));
+			game.getEntityContainer().add(new Player(new PositionComponent(gameSize / 2, gameSize / 2 + i % 2),
+			                                         (i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP));
 		}
 
-		game.getDispatcher().registerHandler(new MovementHandler(game.getGridObjectContainer()));
-		game.getGridObjectContainer().add(new GridObject(new Position(10, 10), Direction.DOWN));
+		game.getDispatcher().registerHandler(new MovementHandler(game.getEntityContainer(), game.getDispatcher()));
+		game.getDispatcher().registerHandler(new UpdateHandler(game.getEntityContainer(), game.getDispatcher()));
+		game.getDispatcher().registerHandler(new CollisionHandler(game.getDispatcher()));
 
-		window.setContentPane(new GridObjectContainerPanel(game.getGridObjectContainer()));
+		window.setContentPane(new EntityContainerPanel(game.getEntityContainer()));
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
@@ -58,17 +63,15 @@ public class Server
 		{
 			try
 			{
-				Thread.sleep(250);
+				game.getDispatcher().dispatch(new UpdateEvent());
 
-				send(game.getGridObjectContainer());
+				Thread.sleep(200);
 
-				for (GridObject gridObject : game.getGridObjectContainer())
-					game.getDispatcher().dispatch(new PositionChangeRequestEvent(gridObject,
-							new Position(gridObject.getPosition().getX() + gridObject.getDirection().getxShift(),
-									gridObject.getPosition().getY() + gridObject.getDirection().getyShift())));
+				send(game.getEntityContainer());
 
 				window.repaint();
-			} catch (InterruptedException e)
+			}
+			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
@@ -77,7 +80,7 @@ public class Server
 
 	private void setupWindow()
 	{
-		window = new Window(720, 480);
+		window = new Window(720, 720);
 		window.setContentPane(new JPanel()
 		{
 			{
@@ -92,7 +95,7 @@ public class Server
 				for (int i = 0; i < connections.size(); i++)
 				{
 					g.drawString(connections.get(i).getInetAddress().toString(), 0,
-							getHeight() / connections.size() * (i + 1));
+					             getHeight() / connections.size() * (i + 1));
 				}
 			}
 		});
@@ -120,7 +123,8 @@ public class Server
 
 				window.repaint();
 			}
-		} catch (InterruptedException e)
+		}
+		catch (InterruptedException e)
 		{
 			e.printStackTrace();
 		}
@@ -143,11 +147,13 @@ public class Server
 
 						if (object instanceof Event)
 						{
-							System.out.println("Received event " + object.toString());
-
 							dispatcher.dispatch(convertToLocalEvent((Event) object));
 						}
 					}
+
+					connections.remove(connection);
+
+					this.stop();
 				}
 			}.start();
 		}
@@ -159,14 +165,25 @@ public class Server
 		{
 			for (Method method : event.getClass().getMethods())
 			{
-				if (method.getReturnType().equals(GridObject.class))
+				if (method.getReturnType().equals(Entity.class))
 				{
-					event.getClass()
-							.getMethod("set" + method.getName().substring(3, method.getName().length()), GridObject.class)
-							.invoke(event, getLocalGridObject((GridObject) method.invoke(event)));
+					Entity localEntity = getLocalGridObject((Entity) method.invoke(event));
+
+					if (localEntity == null)
+					{
+						System.out.println("Error converting to local gridObject");
+					}
+					else
+					{
+						event.getClass()
+						     .getMethod("set" + method.getName().substring(3, method.getName().length()),
+						                Entity.class)
+						     .invoke(event, localEntity);
+					}
 				}
 			}
-		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		}
+		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
 		{
 			e.printStackTrace();
 		}
@@ -174,13 +191,13 @@ public class Server
 		return event;
 	}
 
-	private GridObject getLocalGridObject(GridObject remoteGridObject)
+	private Entity getLocalGridObject(Entity remoteEntity)
 	{
-		for (GridObject gridObject : game.getGridObjectContainer())
+		for (Entity entity : game.getEntityContainer())
 		{
-			if (gridObject.equals(remoteGridObject))
+			if (entity.equals(remoteEntity))
 			{
-				return gridObject;
+				return entity;
 			}
 		}
 

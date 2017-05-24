@@ -3,10 +3,12 @@ package com.techinsiderpro.common.net;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
-public class Connection
+public class Connection implements Serializable
 {
 	private ObjectOutputStream objectOutputStream;
 	private ObjectInputStream objectInputStream;
@@ -20,7 +22,8 @@ public class Connection
 
 			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 			objectInputStream = new ObjectInputStream(socket.getInputStream());
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -34,7 +37,8 @@ public class Connection
 		{
 			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 			objectInputStream = new ObjectInputStream(socket.getInputStream());
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -45,7 +49,8 @@ public class Connection
 		try
 		{
 			objectOutputStream.writeObject(object);
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -56,9 +61,13 @@ public class Connection
 		try
 		{
 			return objectInputStream.readObject();
-		} catch (IOException | ClassNotFoundException e)
+		}
+		catch (IOException | ClassNotFoundException e)
 		{
-			e.printStackTrace();
+			if (!(e instanceof SocketException))
+			{
+				e.printStackTrace();
+			}
 		}
 
 		return null;
@@ -66,7 +75,7 @@ public class Connection
 
 	public boolean isConnected()
 	{
-		return socket.isConnected();
+		return socket.isConnected() && !socket.isOutputShutdown();
 	}
 
 	public InetAddress getInetAddress()
