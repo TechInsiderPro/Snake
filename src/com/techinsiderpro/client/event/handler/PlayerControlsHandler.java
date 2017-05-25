@@ -7,6 +7,8 @@ import com.techinsiderpro.common.event.handler.Handler;
 import com.techinsiderpro.common.game.entity.Entity;
 import com.techinsiderpro.common.game.entity.component.DirectionComponent;
 
+import javax.swing.*;
+
 public class PlayerControlsHandler
 {
 	private int upKey, downKey, leftKey, rightKey;
@@ -28,24 +30,22 @@ public class PlayerControlsHandler
 	{
 		if (playerEntity != null)
 		{
-//			if (keyPressedEvent.getKeyCode() == upKey)
-//			{
-//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.UP, playerEntity));
-//			}
-//			else if (keyPressedEvent.getKeyCode() == downKey)
-//			{
-//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.DOWN, playerEntity));
-//			}
-//			else if (keyPressedEvent.getKeyCode() == leftKey)
-//			{
-//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.LEFT, playerEntity));
-//			}
-//			else if (keyPressedEvent.getKeyCode() == rightKey)
-//			{
-//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.RIGHT, playerEntity));
-//			}
-
-			dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.RIGHT, playerEntity));
+			if (keyPressedEvent.getKeyCode() == upKey)
+			{
+				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.UP, playerEntity));
+			}
+			else if (keyPressedEvent.getKeyCode() == downKey)
+			{
+				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.DOWN, playerEntity));
+			}
+			else if (keyPressedEvent.getKeyCode() == leftKey)
+			{
+				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.LEFT, playerEntity));
+			}
+			else if (keyPressedEvent.getKeyCode() == rightKey)
+			{
+				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.RIGHT, playerEntity));
+			}
 		}
 	}
 

@@ -69,7 +69,7 @@ public class Client
 
 		networkedDispatcher = new NetworkedDispatcher(connection);
 
-		playerControlsHandler = new PlayerControlsHandler(KeyStroke.getKeyStroke('w').getKeyCode(), KeyStroke.getKeyStroke('s').getKeyCode(), KeyStroke.getKeyStroke('a').getKeyCode(), KeyStroke.getKeyStroke('d').getKeyCode(), networkedDispatcher);
+		playerControlsHandler = new PlayerControlsHandler(KeyStroke.getKeyStroke('w', 0).getKeyCode(), KeyStroke.getKeyStroke('s', 0).getKeyCode(), KeyStroke.getKeyStroke('a', 0).getKeyCode(), KeyStroke.getKeyStroke('d', 0).getKeyCode(), networkedDispatcher);
 
 		EntityContainerPanel entityContainerPanel = new EntityContainerPanel();
 
@@ -168,7 +168,7 @@ public class Client
 
 		for (Entity entity : entityContainer)
 		{
-			if (entity.getComponent(OwnedComponent.class) != null)// && entity.getComponent(OwnedComponent.class).getOwnerAddress().equals(connection.getLocalInetAddress()))
+			if (entity.getComponent(OwnedComponent.class) != null && entity.getComponent(OwnedComponent.class).getOwnerAddress().equals(connection.getLocalInetAddress()))
 				playerControlsHandler.setPlayerEntity(entity);
 		}
 	}

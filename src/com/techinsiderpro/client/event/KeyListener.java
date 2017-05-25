@@ -2,6 +2,7 @@ package com.techinsiderpro.client.event;
 
 import com.techinsiderpro.common.event.dispatcher.Dispatcher;
 
+import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -19,6 +20,6 @@ public class KeyListener extends KeyAdapter
 	{
 		super.keyPressed(e);
 
-		dispatcher.dispatch(new KeyPressedEvent(e.getKeyCode()));
+		dispatcher.dispatch(new KeyPressedEvent(KeyStroke.getKeyStroke(e.getKeyChar(), 0).getKeyCode()));
 	}
 }

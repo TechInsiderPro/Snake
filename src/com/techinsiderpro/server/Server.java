@@ -13,6 +13,7 @@ import com.techinsiderpro.common.net.MulticastReceiver;
 import com.techinsiderpro.common.ui.Window;
 import com.techinsiderpro.server.event.UpdateEvent;
 import com.techinsiderpro.server.event.handler.CollisionHandler;
+import com.techinsiderpro.server.event.handler.EntityRemovalHandler;
 import com.techinsiderpro.server.event.handler.MovementHandler;
 import com.techinsiderpro.server.event.handler.UpdateHandler;
 
@@ -130,6 +131,7 @@ public class Server
 										waitForClientsThread.stop();
 
 									host();
+									hostGameThread.start();
 								}
 								else if (hostGameThread.isAlive())
 								{
@@ -187,7 +189,7 @@ public class Server
 					{
 						game.getDispatcher().dispatch(new UpdateEvent());
 
-						Thread.sleep(200);
+						Thread.sleep(500);
 
 						send(game.getEntityContainer());
 					} catch (InterruptedException e)
@@ -208,14 +210,13 @@ public class Server
 
 		for (int i = 0; i < connections.size(); i++)
 		{
-			game.getEntityContainer()
-					.add(new Player(new PositionComponent(mapSize / connections.size(), mapSize / 2 + i % 2),
-							(i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP, new OwnedComponent(connections.get(i).getRemoteInetAddress())));
+			game.getEntityContainer().add(new Player(new PositionComponent(mapSize / connections.size() * i, mapSize / 2), DirectionComponent.DOWN, new OwnedComponent(connections.get(i).getLocalInetAddress())));
 		}
 
 		game.getDispatcher().registerHandler(new MovementHandler(game.getEntityContainer(), game.getDispatcher()));
 		game.getDispatcher().registerHandler(new UpdateHandler(game.getEntityContainer(), game.getDispatcher()));
 		game.getDispatcher().registerHandler(new CollisionHandler(game.getDispatcher()));
+		game.getDispatcher().registerHandler(new EntityRemovalHandler(game.getEntityContainer()));
 
 		return game;
 	}
