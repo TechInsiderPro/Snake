@@ -48,6 +48,7 @@ public class Connection implements Serializable
 	{
 		try
 		{
+			objectOutputStream.reset();
 			objectOutputStream.writeObject(object);
 		}
 		catch (IOException e)
@@ -71,6 +72,18 @@ public class Connection implements Serializable
 		}
 
 		return null;
+	}
+
+	public void close()
+	{
+		try
+		{
+			socket.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public boolean isConnected()

@@ -13,4 +13,11 @@ public class Window extends JFrame
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
+
+	public Window(String title, int width, int height)
+	{
+		this(width, height);
+
+		setTitle(title);
+	}
 }

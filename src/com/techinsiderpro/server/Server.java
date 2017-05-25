@@ -1,11 +1,7 @@
 package com.techinsiderpro.server;
 
 import com.techinsiderpro.common.event.Event;
-import com.techinsiderpro.server.event.UpdateEvent;
 import com.techinsiderpro.common.event.dispatcher.Dispatcher;
-import com.techinsiderpro.server.event.handler.CollisionHandler;
-import com.techinsiderpro.server.event.handler.MovementHandler;
-import com.techinsiderpro.server.event.handler.UpdateHandler;
 import com.techinsiderpro.common.game.Game;
 import com.techinsiderpro.common.game.entity.Entity;
 import com.techinsiderpro.common.game.entity.Player;
@@ -13,11 +9,17 @@ import com.techinsiderpro.common.game.entity.component.DirectionComponent;
 import com.techinsiderpro.common.game.entity.component.PositionComponent;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastReceiver;
-import com.techinsiderpro.common.ui.EntityContainerPanel;
 import com.techinsiderpro.common.ui.Window;
+import com.techinsiderpro.server.event.UpdateEvent;
+import com.techinsiderpro.server.event.handler.CollisionHandler;
+import com.techinsiderpro.server.event.handler.MovementHandler;
+import com.techinsiderpro.server.event.handler.UpdateHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.DatagramPacket;
@@ -26,40 +28,149 @@ import java.util.List;
 
 public class Server
 {
-
 	private List<Connection> connections;
 	private Game game;
-	private Window window;
+	private boolean close;
 
-	private Server(int clientCount, String ip, int port)
+	private Server()
 	{
-		connections = new ArrayList<>();
-
-		//Before Setup
-		setupWindow();
-		waitForClients(clientCount, ip, port);
-
-		int gameSize = 25;
-
-		//Setup
-		game = new Game(gameSize, gameSize);
-
-		for (int i = 0; i < connections.size(); i++)
+		final Window window = new Window("Server", 250, 150);
+		window.setContentPane(new JPanel()
 		{
-			game.getEntityContainer().add(new Player(new PositionComponent(gameSize / 2, gameSize / 2 + i % 2),
-			                                         (i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP));
-		}
+			{
+				final int port = 12345;
 
-		game.getDispatcher().registerHandler(new MovementHandler(game.getEntityContainer(), game.getDispatcher()));
-		game.getDispatcher().registerHandler(new UpdateHandler(game.getEntityContainer(), game.getDispatcher()));
-		game.getDispatcher().registerHandler(new CollisionHandler(game.getDispatcher()));
+				final JTextField ipTextField = new JTextField("230.1.1.1");
 
-		window.setContentPane(new EntityContainerPanel(game.getEntityContainer()));
+				final JButton waitForClientsButton = new JButton("Wait for clients")
+				{
+					Thread thread;
+
+					{
+						addActionListener(new ActionListener()
+						{
+							@Override
+							public void actionPerformed(ActionEvent e)
+							{
+								if (thread != null && thread.isAlive())
+								{
+									thread.stop();
+								}
+								else
+								{
+									connections = new ArrayList<>();
+
+									thread = new Thread()
+									{
+										@Override
+										public void run()
+										{
+											super.run();
+
+											try
+											{
+												MulticastReceiver multicastReceiver =
+														new MulticastReceiver(ipTextField.getText(), port);
+
+												System.out.println("Waiting for clients to connect on " +
+												                   multicastReceiver.inetAddress.toString());
+
+												while (isAlive())
+												{
+													DatagramPacket packet = multicastReceiver.receive();
+													System.out.println("Received packet : " + packet.toString());
+
+													Thread.sleep(1000);
+
+													Connection connection =
+															new Connection(packet.getAddress(), port + 1);
+													connections.add(connection);
+
+													System.out.println("Added new connection : " +
+													                   connection.getInetAddress().toString());
+												}
+											}
+											catch (InterruptedException e)
+											{
+												e.printStackTrace();
+											}
+										}
+									};
+
+									thread.start();
+								}
+							}
+						});
+					}
+				};
+
+				JLabel clientCountLabel = new JLabel()
+				{
+					@Override
+					public void repaint()
+					{
+						if (connections != null)
+						{
+							setText("Clients : " + connections.size());
+						}
+					}
+				};
+
+				JButton hostGameButton = new JButton("Host Game")
+				{
+					{
+						addActionListener(new ActionListener()
+						{
+							@Override
+							public void actionPerformed(ActionEvent e)
+							{
+								host();
+							}
+						});
+					}
+				};
+
+				setLayout(new BorderLayout());
+
+				add(ipTextField, BorderLayout.PAGE_START);
+				add(clientCountLabel, BorderLayout.LINE_START);
+				add(waitForClientsButton, BorderLayout.CENTER);
+				add(hostGameButton, BorderLayout.LINE_END);
+				add(new JButton("Stop Server"){
+					{
+						addActionListener(new ActionListener()
+						{
+							@Override
+							public void actionPerformed(ActionEvent e)
+							{
+								if (connections != null)
+								{
+									for(Connection connection : connections)
+									{
+										connection.close();
+									}
+
+									close = true;
+								}
+
+								window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+							}
+						});
+					}
+				}, BorderLayout.PAGE_END);
+			}
+		});
+	}
+
+	private void host()
+	{
+		//Setup
+		Game game = setupGame(25);
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
 
-		while (true)
+		while (!close)
 		{
 			try
 			{
@@ -67,9 +178,8 @@ public class Server
 
 				Thread.sleep(200);
 
+				System.out.println(game.getEntityContainer().toArray()[0].toString());
 				send(game.getEntityContainer());
-
-				window.repaint();
 			}
 			catch (InterruptedException e)
 			{
@@ -78,56 +188,24 @@ public class Server
 		}
 	}
 
-	private void setupWindow()
+	private Game setupGame(int mapSize)
 	{
-		window = new Window(720, 720);
-		window.setContentPane(new JPanel()
+		game = new Game(mapSize, mapSize);
+
+		System.out.println(connections.size());
+
+		for (int i = 0; i < connections.size(); i++)
 		{
-			{
-				setFont(new Font("ariel", Font.PLAIN, 96));
-			}
-
-			@Override
-			public void paint(Graphics g)
-			{
-				super.paint(g);
-
-				for (int i = 0; i < connections.size(); i++)
-				{
-					g.drawString(connections.get(i).getInetAddress().toString(), 0,
-					             getHeight() / connections.size() * (i + 1));
-				}
-			}
-		});
-	}
-
-	private void waitForClients(int clientCount, String ip, int port)
-	{
-		try
-		{
-			MulticastReceiver multicastReceiver = new MulticastReceiver(ip, port);
-
-			System.out.println("Waiting for clients to connect on " + multicastReceiver.inetAddress.toString());
-
-			while (connections.size() < clientCount)
-			{
-				DatagramPacket packet = multicastReceiver.receive();
-				System.out.println("Received packet : " + packet.toString());
-
-				Thread.sleep(1000);
-
-				Connection connection = new Connection(packet.getAddress(), port + 1);
-				connections.add(connection);
-
-				System.out.println("Added new connection : " + connection.getInetAddress().toString());
-
-				window.repaint();
-			}
+			game.getEntityContainer()
+			    .add(new Player(new PositionComponent(mapSize / connections.size(), mapSize / 2 + i % 2),
+			                    (i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP));
 		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
+
+		game.getDispatcher().registerHandler(new MovementHandler(game.getEntityContainer(), game.getDispatcher()));
+		game.getDispatcher().registerHandler(new UpdateHandler(game.getEntityContainer(), game.getDispatcher()));
+		game.getDispatcher().registerHandler(new CollisionHandler(game.getDispatcher()));
+
+		return game;
 	}
 
 	private void listenForEventsFromConnections(final Dispatcher dispatcher)
@@ -204,7 +282,7 @@ public class Server
 		return null;
 	}
 
-	public void send(Object object)
+	private void send(Object object)
 	{
 		for (Connection connection : connections)
 		{
@@ -214,6 +292,6 @@ public class Server
 
 	public static void main(String[] args)
 	{
-		new Server(1, "230.1.1.1", 12345);
+		new Server();
 	}
 }

@@ -18,7 +18,8 @@ public class ListEntityContainer extends CopyOnWriteArrayList<Entity> implements
 	@Override
 	public boolean add(Entity entity)
 	{
-		return isWithinBounds(entity.getComponent(PositionComponent.class)) && super.add(entity);
+		// isWithinBounds(entity.getComponent(PositionComponent.class)) && super.add(entity);
+		return super.add(entity);
 	}
 
 	@Override

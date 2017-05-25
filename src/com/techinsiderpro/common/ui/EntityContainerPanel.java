@@ -10,19 +10,12 @@ public class EntityContainerPanel extends JPanel
 {
 	private EntityContainer entityContainer;
 
-	public EntityContainerPanel(EntityContainer entityContainer)
-	{
-		this.entityContainer = entityContainer;
-	}
-
-	public EntityContainerPanel()
-	{
-	}
-
 	@Override
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
+
+		System.out.println("here");
 
 		if (entityContainer != null)
 		{
