@@ -22,8 +22,7 @@ public class Connection implements Serializable
 
 			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 			objectInputStream = new ObjectInputStream(socket.getInputStream());
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -37,8 +36,7 @@ public class Connection implements Serializable
 		{
 			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 			objectInputStream = new ObjectInputStream(socket.getInputStream());
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -50,8 +48,7 @@ public class Connection implements Serializable
 		{
 			objectOutputStream.reset();
 			objectOutputStream.writeObject(object);
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -62,8 +59,7 @@ public class Connection implements Serializable
 		try
 		{
 			return objectInputStream.readObject();
-		}
-		catch (IOException | ClassNotFoundException e)
+		} catch (IOException | ClassNotFoundException e)
 		{
 			if (!(e instanceof SocketException))
 			{
@@ -79,8 +75,7 @@ public class Connection implements Serializable
 		try
 		{
 			socket.close();
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -91,8 +86,13 @@ public class Connection implements Serializable
 		return socket.isConnected() && !socket.isOutputShutdown();
 	}
 
-	public InetAddress getInetAddress()
+	public InetAddress getRemoteInetAddress()
 	{
 		return socket.getInetAddress();
+	}
+
+	public InetAddress getLocalInetAddress()
+	{
+		return socket.getLocalAddress();
 	}
 }

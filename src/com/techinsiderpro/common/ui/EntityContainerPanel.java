@@ -15,12 +15,11 @@ public class EntityContainerPanel extends JPanel
 	{
 		super.paintComponent(g);
 
-		System.out.println("here");
-
 		if (entityContainer != null)
 		{
 			double xScale = (double) getWidth() / entityContainer.getWidth(), yScale =
 					(double) getHeight() / entityContainer.getHeight();
+
 
 			for (int r = 0; r < entityContainer.getHeight(); r++)
 			{
@@ -28,10 +27,12 @@ public class EntityContainerPanel extends JPanel
 				{
 					if (!entityContainer.isEmptyAt(new PositionComponent(c, r)))
 					{
+						g.setColor(Color.red);
 						g.fillRect((int) (c * xScale), (int) (r * yScale), (int) xScale, (int) yScale);
 					}
 					else
 					{
+						g.setColor(Color.black);
 						g.drawRect((int) (c * xScale), (int) (r * yScale), (int) xScale, (int) yScale);
 					}
 				}

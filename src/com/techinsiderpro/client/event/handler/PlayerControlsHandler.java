@@ -14,34 +14,43 @@ public class PlayerControlsHandler
 	private Entity playerEntity;
 
 	public PlayerControlsHandler(int upKey, int downKey, int leftKey, int rightKey,
-	                             Dispatcher dispatcher, Entity playerEntity)
+	                             Dispatcher dispatcher)
 	{
 		this.upKey = upKey;
 		this.downKey = downKey;
 		this.leftKey = leftKey;
 		this.rightKey = rightKey;
 		this.dispatcher = dispatcher;
-		this.playerEntity = playerEntity;
 	}
 
 	@Handler(eventType = KeyPressedEvent.class)
 	public void handleKeyPressedEvent(KeyPressedEvent keyPressedEvent)
 	{
-		if (keyPressedEvent.getKeyCode() == upKey)
+		if (playerEntity != null)
 		{
-			dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.UP, playerEntity));
-		}
-		else if(keyPressedEvent.getKeyCode() == downKey)
-		{
-			dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.DOWN, playerEntity));
-		}
-		else if(keyPressedEvent.getKeyCode() == leftKey)
-		{
-			dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.LEFT, playerEntity));
-		}
-		else if(keyPressedEvent.getKeyCode() == rightKey)
-		{
+//			if (keyPressedEvent.getKeyCode() == upKey)
+//			{
+//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.UP, playerEntity));
+//			}
+//			else if (keyPressedEvent.getKeyCode() == downKey)
+//			{
+//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.DOWN, playerEntity));
+//			}
+//			else if (keyPressedEvent.getKeyCode() == leftKey)
+//			{
+//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.LEFT, playerEntity));
+//			}
+//			else if (keyPressedEvent.getKeyCode() == rightKey)
+//			{
+//				dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.RIGHT, playerEntity));
+//			}
+
 			dispatcher.dispatch(new DirectionChangeRequestEvent(DirectionComponent.RIGHT, playerEntity));
 		}
+	}
+
+	public void setPlayerEntity(Entity entity)
+	{
+		playerEntity = entity;
 	}
 }

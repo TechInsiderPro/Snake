@@ -1,5 +1,11 @@
 package com.techinsiderpro.client;
 
+import com.techinsiderpro.client.event.KeyListener;
+import com.techinsiderpro.client.event.dispatcher.NetworkedDispatcher;
+import com.techinsiderpro.client.event.handler.PlayerControlsHandler;
+import com.techinsiderpro.common.event.dispatcher.Dispatcher;
+import com.techinsiderpro.common.game.entity.Entity;
+import com.techinsiderpro.common.game.entity.component.OwnedComponent;
 import com.techinsiderpro.common.game.entity.container.EntityContainer;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastBroadcaster;
@@ -8,8 +14,6 @@ import com.techinsiderpro.common.ui.Window;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -25,39 +29,58 @@ public class Client
 
 		window.setLayout(new BorderLayout());
 
-		window.add(new JPanel()
-		{
-			{
-				final JTextField ipTextField = new JTextField("230.1.1.1");
-				JButton joinGameButton = new JButton("Join Game")
-				{
-					{
-						addActionListener(new ActionListener()
-						{
-							@Override
-							public void actionPerformed(ActionEvent e)
-							{
-								connect(ipTextField.getText(), 12345);
-							}
-						});
-					}
-				};
+//		window.add(new JPanel()
+//		{
+//			{
+//				final JTextField ipTextField = new JTextField("230.1.1.1");
+//				JButton joinGameButton = new JButton("Join Game")
+//				{
+//					{
+//						addActionListener(new ActionListener()
+//						{
+//							@Override
+//							public void actionPerformed(ActionEvent e)
+//							{
+//								connect(ipTextField.getText(), 12345);
+//							}
+//						});
+//					}
+//				};
+//
+//				setLayout(new BorderLayout());
+//
+//				add(ipTextField, BorderLayout.NORTH);
+//				add(joinGameButton, BorderLayout.SOUTH);
+//			}
+//		}, BorderLayout.CENTER);
 
-				setLayout(new BorderLayout());
-
-				add(ipTextField, BorderLayout.NORTH);
-				add(joinGameButton, BorderLayout.SOUTH);
-			}
-		}, BorderLayout.CENTER);
+		connect("230.1.1.1", 12345);
 	}
+
+	private NetworkedDispatcher networkedDispatcher;
+
+	private Dispatcher clientDispatcher = new Dispatcher();
+
+	private PlayerControlsHandler playerControlsHandler;
 
 	private void connect(String ip, int port)
 	{
 		Connection connection = waitForConnectionToServer(ip, port);
 
+		networkedDispatcher = new NetworkedDispatcher(connection);
+
+		playerControlsHandler = new PlayerControlsHandler(KeyStroke.getKeyStroke('w').getKeyCode(), KeyStroke.getKeyStroke('s').getKeyCode(), KeyStroke.getKeyStroke('a').getKeyCode(), KeyStroke.getKeyStroke('d').getKeyCode(), networkedDispatcher);
+
 		EntityContainerPanel entityContainerPanel = new EntityContainerPanel();
 
 		window.add(entityContainerPanel, BorderLayout.CENTER);
+
+		window.addKeyListener(new KeyListener(clientDispatcher));
+
+		clientDispatcher.registerHandler(playerControlsHandler);
+
+		window.setFocusable(true);
+		window.requestFocus();
 
 		while (connection.isConnected())
 		{
@@ -88,12 +111,10 @@ public class Client
 			connection = new Connection(socket);
 
 			System.out.println("Connected...");
-		}
-		catch (SocketTimeoutException e)
+		} catch (SocketTimeoutException e)
 		{
 			System.out.println("No response...");
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
@@ -113,8 +134,7 @@ public class Client
 
 				sendJoinGameRequest(ip, port);
 				connection = waitForConnection(port + 1);
-			}
-			catch (InterruptedException e)
+			} catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
@@ -142,7 +162,15 @@ public class Client
 
 	private void updateEntityContainerPanel(EntityContainerPanel entityContainerPanel, Connection connection)
 	{
-		entityContainerPanel.setEntityContainer(waitForEntityContainerFromServer(connection));
+		EntityContainer entityContainer = waitForEntityContainerFromServer(connection);
+
+		entityContainerPanel.setEntityContainer(entityContainer);
+
+		for (Entity entity : entityContainer)
+		{
+			if (entity.getComponent(OwnedComponent.class) != null)// && entity.getComponent(OwnedComponent.class).getOwnerAddress().equals(connection.getLocalInetAddress()))
+				playerControlsHandler.setPlayerEntity(entity);
+		}
 	}
 
 	public static void main(String[] args)

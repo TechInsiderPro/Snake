@@ -6,6 +6,7 @@ import com.techinsiderpro.common.game.Game;
 import com.techinsiderpro.common.game.entity.Entity;
 import com.techinsiderpro.common.game.entity.Player;
 import com.techinsiderpro.common.game.entity.component.DirectionComponent;
+import com.techinsiderpro.common.game.entity.component.OwnedComponent;
 import com.techinsiderpro.common.game.entity.component.PositionComponent;
 import com.techinsiderpro.common.net.Connection;
 import com.techinsiderpro.common.net.MulticastReceiver;
@@ -31,10 +32,12 @@ public class Server
 	private List<Connection> connections;
 	private Game game;
 	private boolean close;
+	private Thread waitForClientsThread, hostGameThread;
 
 	private Server()
 	{
 		final Window window = new Window("Server", 250, 150);
+
 		window.setContentPane(new JPanel()
 		{
 			{
@@ -44,23 +47,21 @@ public class Server
 
 				final JButton waitForClientsButton = new JButton("Wait for clients")
 				{
-					Thread thread;
-
 					{
 						addActionListener(new ActionListener()
 						{
 							@Override
 							public void actionPerformed(ActionEvent e)
 							{
-								if (thread != null && thread.isAlive())
+								if (waitForClientsThread != null && waitForClientsThread.isAlive())
 								{
-									thread.stop();
+									waitForClientsThread.stop();
 								}
 								else
 								{
 									connections = new ArrayList<>();
 
-									thread = new Thread()
+									waitForClientsThread = new Thread()
 									{
 										@Override
 										public void run()
@@ -73,7 +74,7 @@ public class Server
 														new MulticastReceiver(ipTextField.getText(), port);
 
 												System.out.println("Waiting for clients to connect on " +
-												                   multicastReceiver.inetAddress.toString());
+														multicastReceiver.inetAddress.toString());
 
 												while (isAlive())
 												{
@@ -87,17 +88,16 @@ public class Server
 													connections.add(connection);
 
 													System.out.println("Added new connection : " +
-													                   connection.getInetAddress().toString());
+															connection.getRemoteInetAddress().toString());
 												}
-											}
-											catch (InterruptedException e)
+											} catch (InterruptedException e)
 											{
 												e.printStackTrace();
 											}
 										}
 									};
 
-									thread.start();
+									waitForClientsThread.start();
 								}
 							}
 						});
@@ -116,7 +116,7 @@ public class Server
 					}
 				};
 
-				JButton hostGameButton = new JButton("Host Game")
+				final JButton hostGameButton = new JButton("Host Game")
 				{
 					{
 						addActionListener(new ActionListener()
@@ -124,7 +124,33 @@ public class Server
 							@Override
 							public void actionPerformed(ActionEvent e)
 							{
-								host();
+								if (hostGameThread == null)
+								{
+									if (waitForClientsThread != null && waitForClientsThread.isAlive())
+										waitForClientsThread.stop();
+
+									host();
+								}
+								else if (hostGameThread.isAlive())
+								{
+									hostGameThread.stop();
+
+									if (connections != null)
+									{
+										for (Connection connection : connections)
+										{
+											connection.close();
+										}
+
+										close = true;
+									}
+
+									window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+								}
+								else
+								{
+									hostGameThread.start();
+								}
 							}
 						});
 					}
@@ -136,28 +162,6 @@ public class Server
 				add(clientCountLabel, BorderLayout.LINE_START);
 				add(waitForClientsButton, BorderLayout.CENTER);
 				add(hostGameButton, BorderLayout.LINE_END);
-				add(new JButton("Stop Server"){
-					{
-						addActionListener(new ActionListener()
-						{
-							@Override
-							public void actionPerformed(ActionEvent e)
-							{
-								if (connections != null)
-								{
-									for(Connection connection : connections)
-									{
-										connection.close();
-									}
-
-									close = true;
-								}
-
-								window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
-							}
-						});
-					}
-				}, BorderLayout.PAGE_END);
 			}
 		});
 	}
@@ -165,27 +169,35 @@ public class Server
 	private void host()
 	{
 		//Setup
-		Game game = setupGame(25);
+		final Game game = setupGame(25);
 
 		//After Setup
 		listenForEventsFromConnections(game.getDispatcher());
 
-		while (!close)
+		hostGameThread = new Thread()
 		{
-			try
+			@Override
+			public void run()
 			{
-				game.getDispatcher().dispatch(new UpdateEvent());
+				super.run();
 
-				Thread.sleep(200);
+				while (isAlive())
+				{
+					try
+					{
+						game.getDispatcher().dispatch(new UpdateEvent());
 
-				System.out.println(game.getEntityContainer().toArray()[0].toString());
-				send(game.getEntityContainer());
+						Thread.sleep(200);
+
+						send(game.getEntityContainer());
+					} catch (InterruptedException e)
+
+					{
+						e.printStackTrace();
+					}
+				}
 			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		};
 	}
 
 	private Game setupGame(int mapSize)
@@ -197,8 +209,8 @@ public class Server
 		for (int i = 0; i < connections.size(); i++)
 		{
 			game.getEntityContainer()
-			    .add(new Player(new PositionComponent(mapSize / connections.size(), mapSize / 2 + i % 2),
-			                    (i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP));
+					.add(new Player(new PositionComponent(mapSize / connections.size(), mapSize / 2 + i % 2),
+							(i % 2 == 0) ? DirectionComponent.DOWN : DirectionComponent.UP, new OwnedComponent(connections.get(i).getRemoteInetAddress())));
 		}
 
 		game.getDispatcher().registerHandler(new MovementHandler(game.getEntityContainer(), game.getDispatcher()));
@@ -254,14 +266,13 @@ public class Server
 					else
 					{
 						event.getClass()
-						     .getMethod("set" + method.getName().substring(3, method.getName().length()),
-						                Entity.class)
-						     .invoke(event, localEntity);
+								.getMethod("set" + method.getName().substring(3, method.getName().length()),
+										Entity.class)
+								.invoke(event, localEntity);
 					}
 				}
 			}
-		}
-		catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
 		{
 			e.printStackTrace();
 		}
